@@ -17,15 +17,23 @@ function copyTaskBar($username) {
 
     $filePath = "C:\Users\$username\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
 
+    if (Test-Path $filePath) {
     Copy-Item $filePath -Destination "C:\$username\TaskBar" -Recurse
-
+    }
+    else {
+        Write-Host "No Folder Found. Are there any programs pinned to the taskbar?"
+    }
 }
 
 function copyStartMenu($username) {
 
     $filePath = "C:\Users\$username\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\StartMenu"
 
+    if (Test-Path $filePath) {
     Copy-Item $filePath -Destination "C:\$username\StartMenu" -Recurse
+    }
+    else {
+        Write-Host "No Folder Found. Are there any programs pinned to the Start Menu? Windows 8 and up stores the start menu diffierently."
+    }
 
 }
-
