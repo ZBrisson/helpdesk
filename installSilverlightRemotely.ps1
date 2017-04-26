@@ -6,7 +6,7 @@
 # Can do single computer by uncommenting $list_of_computers
 
 ## get the list of computers from the text file
-$list_of_computers = get-content "\\wcp01zfs-06\departments\Information Technology\Desktop Support\Scripts\silverlight\computerlist.txt"
+$list_of_computers = get-content "\\remoteserverhere\computerlist.txt"
 # $list_of_computers = (Get-ADComputer -SearchBase 'OU=Workstations,OU=Palm Beach Gardens,OU=Branch Court Services,OU=Operations,OU=CLERK,DC=Clerk,DC=local' -Filter '*' -Properties Name).Name
 # $list_of_computers = $list_of_computers.Trim()
 # $list_of_computers = Read-Host "Type the name of a PC"
@@ -14,9 +14,9 @@ $list_of_computers = get-content "\\wcp01zfs-06\departments\Information Technolo
 #display total count
 Write-host "Gathered machines" $list_of_computers.count
 # Silverlight .exe 32bit file path
-$silverlight32Path = "\\wcp01zfs-03.clerk.local\IT\Software\Silverlight\Silverlight.exe"
+$silverlight32Path = "\\remoteserverhere\\Silverlight.exe"
 # Silverlight .exe 64bit file path
-$silverlight64Path = "\\wcp01zfs-03.clerk.local\IT\Software\Silverlight\Silverlight_x64.exe"
+$silverlight64Path = "\\\\remoteserverhere\\Silverlight_x64.exe"
 #The .exe resting place on the remote computer
 $installLocation = "\\$computer\c$\Software\"
 
