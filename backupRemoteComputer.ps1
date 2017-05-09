@@ -1,5 +1,5 @@
 # Back Up User Profile Information
-#By: Zach Brisson
+# By: Zach Brisson
 # 04/24/2017
 # Copy user information that is not networked with the cloud drives.
 
@@ -16,12 +16,20 @@ Param(
 
 # Backup Directory
 $backupDirectory = "C:\$username"
+# Local Computer
+$localComputer = $env:COMPUTERNAME
+#PS Remote
+$psremote = New-PSSession -ComputerName $sourceComputer
 # Remote App Data File Location
 $roamingAppData = "\\$sourceComputer\c$\Users\$username\AppData\Roaming"
 
+#get the sid number for a username
+$email = "$username@mypalmbeachclerk.com" 
+$sid = (New-Object System.Security.Principal.NTAccount($email)).Translate([System.Security.Principal.SecurityIdentifier]).value
+
 function copyAll() {
     copyMembership
-    copyOutlook
+    copyOffice
     copyPrinter
     copyStartMenu
     copyTaskBar
@@ -32,7 +40,7 @@ function copyMembership() {
     Get-ADComputer $sourceComputer -Properties MemberOf | Export-CSV -path "$backupDirectory\ADMembership_export.csv"
 }
 
-function copyOutlook() {
+function copyOffice() {
 
 
     Write-Host "Copying Office Information from $sourceComputer to $backupDirectory"
@@ -89,10 +97,16 @@ function copyStartMenu($username) {
 
 function copyTaskbar() {
     $filePath = "$roamingAppData\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
+    $regFilePath = "HKEY_USERS\$sid\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband"
+    $regCmd = "export"
+    $regExport = { Param ($RegCmd,$regFilePath,$backupDirectory) Invoke-expression "C:\windows\system32\reg.exe $RegCmd $RegFilePath c:\temp\taskbar.reg -y"}
 
     if (Test-Path $filePath) {
         Write-Host "Copying Taskbar favorites from $sourceComputer to $backupDirectory\Taskbar"
         Copy-Item $filePath -Destination "$backupDirectory\TaskBar" -Recurse
+        Invoke-Command -Session $psremote -ArgumentList $RegCmd,$RegFilePath -scriptblock $regExport
+        Copy-Item "\\$sourceComputer\c$\temp\taskbar.reg" -Destination "$backupDirectory\Taskbar\taskbar.reg" -Recurse
+        Remove-Item -Recurse "\\$sourceComputer\c$\temp\taskbar.reg"
         Write-Host "Successfully copied Taskbar favorites information." -ForegroundColor Green
     }
     else {
@@ -100,3 +114,58 @@ function copyTaskbar() {
     }
 }
 
+
+function Show-Menu
+{
+     param (
+           [string]$Title = 'Backup Remote Computer Settings'
+     )
+     Write-Host "================ $Title ================"
+    
+     Write-Host "copy All: Press '1' for this option."
+     Write-Host "copy Active Directory Membership info: Press '2' for this option."
+     Write-Host "copy Office: Press '3' for this option."
+     Write-Host "copy Printer Info: Press '4' for this option."
+     Write-Host "copy Start Menu: Press '5' for this option."
+     Write-Host "copy Taskbar Menu: Press '6' for this option."
+     Write-Host "Q: Press 'Q' to quit."
+}
+
+do
+{
+     Show-Menu
+     $input = Read-Host "Please make a selection"
+     switch ($input)
+     {
+           '1' {
+                cls
+                'You chose option #1'
+                copyAll
+           } '2' {
+                cls
+                'You chose option #2'
+                copyMembership
+           } '3' {
+                cls
+                'You chose option #3'
+                copyOffice
+           }'4' {
+                cls
+                'You chose option #4'
+                copyPrinter
+           } '5' {
+                cls
+                'You chose option #5'
+                copyStartMenu
+           } '6' {
+                cls
+                'You chose option #6'
+                copyTaskbar
+
+           } 'q' {
+                return
+           }
+     }
+     pause
+}
+until ($input -eq 'q')
